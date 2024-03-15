@@ -3,17 +3,48 @@ import { ApolloServer } from "@apollo/server";
 import { startStandaloneServer } from "@apollo/server/standalone";
 import { graphql } from "graphql";
 
+let notes = [
+  { id: "1", content: "This is the first note", author: "Mr. X" },
+  { id: "2", content: "This is another note", author: "Mr. Y" },
+  { id: "3", content: "Oh hey look, this is the third one!", author: "Mr. Z" },
+];
+
 // Construct a schema, using GraphQL schema language
 const typeDefs = `#graphql
-  type Query {
-    hello: String
+  type Note {
+        id: ID!
+        content: String!
+        author: String!
   }
+   type Query {
+    hello: String
+    notes: [Note!]!
+    note(id: ID!): Note!
+}
+  type Mutation {
+    newNote(content: String!): Note!
+}
 `;
 
 // Provide resolver functions for our schema fields
 const resolvers = {
   Query: {
     hello: () => "Hello world!",
+    notes: () => notes,
+    note: (parent, args) => {
+      return notes.find((note) => note.id === args.id);
+    },
+  },
+  Mutation: {
+    newNote: (parent, args) => {
+      let noteValue = {
+        id: String(notes.length + 1),
+        content: args.content,
+        author: "Md. Golam Mafuz",
+      };
+      notes.push(noteValue);
+      return noteValue;
+    },
   },
 };
 
