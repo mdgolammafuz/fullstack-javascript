@@ -5,6 +5,10 @@ import typeDefs from "./typeDefs.js";
 import resolvers from "./resolvers/index.js";
 import models from "./models/index.js";
 import jwt from "jsonwebtoken";
+import helmet from "helmet";
+import cors from "cors";
+import depthLimit from "graphql-depth-limit";
+import { createComplexityLimitRule } from "graphql-validation-complexity";
 
 async function startServer() {
   // Connect to the database
@@ -13,8 +17,14 @@ async function startServer() {
   // Create an Express app
   const app = express();
 
+  // add the middleware at the top of the stack, after const app = express()
+  app.use(helmet());
+
+  // add the middleware after app.use(helmet());
+  app.use(cors());
+
   // get the user info from a JWT
-  const getUser = (token) => {
+  function getUser(token) {
     if (token) {
       try {
         // return the user information from the token
@@ -24,12 +34,13 @@ async function startServer() {
         throw new Error("Session invalid");
       }
     }
-  };
+  }
 
   // Apollo Server setup
   const server = new ApolloServer({
     typeDefs,
     resolvers,
+    validationRules: [depthLimit(5), createComplexityLimitRule(1000)],
     context: ({ req }) => {
       // get the user token from the headers
       const token = req.headers.authorization;
