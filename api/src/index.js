@@ -17,8 +17,27 @@ async function startServer() {
   // Create an Express app
   const app = express();
 
-  // add the middleware at the top of the stack, after const app = express()
-  app.use(helmet());
+  // add the middleware at the top of the stack
+  app.use(
+    helmet({
+      crossOriginEmbedderPolicy: false,
+      contentSecurityPolicy: {
+        directives: {
+          imgSrc: [
+            `'self'`,
+            "data:",
+            "apollo-server-landing-page.cdn.apollographql.com",
+          ],
+          scriptSrc: [`'self'`, `https: 'unsafe-inline'`],
+          manifestSrc: [
+            `'self'`,
+            "apollo-server-landing-page.cdn.apollographql.com",
+          ],
+          frameSrc: [`'self'`, "sandbox.embed.apollographql.com"],
+        },
+      },
+    })
+  );
 
   // add the middleware after app.use(helmet());
   app.use(cors());
@@ -46,8 +65,6 @@ async function startServer() {
       const token = req.headers.authorization;
       // try to retrieve a user with the token
       const user = getUser(token);
-      // for now, let's log the user to the console:
-      //console.log("User:", user);
       // add the db models and the user to the context
       return { models, user };
     },
