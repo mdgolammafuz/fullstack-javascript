@@ -68,13 +68,15 @@ async function startServer() {
       // add the db models and the user to the context
       return { models, user };
     },
+    playground: true, // allows playground in production
+    introspection: true, //allows introspection in production
   });
 
   //start the server
   await server.start();
 
   // Apply the Apollo middleware to the Express app
-  server.applyMiddleware({ app, path: "/api" });
+  server.applyMiddleware({ app, path: "/api" }); //explicitly sets production endpoint
 
   // Start the Express server
   app.listen({ port: 4000 }, () => {
